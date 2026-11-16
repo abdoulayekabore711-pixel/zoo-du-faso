@@ -1,0 +1,405 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Zoo du Faso</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Concept : une savane vue de dessus, cartes d'enclos empilées, une barre de pièces qui reste visible. */
+:root{
+  --bg:#eaf2dd; --surface:#ffffff; --surface-2:#f3f8ea; --fg:#1b3124; --muted:#5a7363;
+  --accent:#2c8a4b; --accent-fg:#ffffff; --sun:#f4b72f; --sun-fg:#3b2b00; --line:#d2e1c4;
+  --bad:#cf4f35; --good:#2c8a4b; --warn:#e0912a; --sky:#cde8f1;
+  --font-display:'Fredoka',system-ui,sans-serif; --font-body:'Nunito',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101c15; --surface:#18281e; --surface-2:#1f3326; --fg:#e7f1e3; --muted:#9ab3a2; --accent:#4cc474; --accent-fg:#06240f;
+    --sun:#f4c04a; --sun-fg:#2d2100; --line:#2c4636; --bad:#ee7d63; --good:#4cc474; --warn:#f0a54a; --sky:#1b3340; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101c15; --surface:#18281e; --surface-2:#1f3326; --fg:#e7f1e3; --muted:#9ab3a2; --accent:#4cc474; --accent-fg:#06240f;
+  --sun:#f4c04a; --sun-fg:#2d2100; --line:#2c4636; --bad:#ee7d63; --good:#4cc474; --warn:#f0a54a; --sky:#1b3340; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.4;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+.wrap{max-width:760px;margin:0 auto}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font-family:var(--font-display);font-size:1.35rem;margin:0;letter-spacing:.01em}
+.boost{background:var(--sun);color:var(--sun-fg);border-radius:999px;padding:7px 14px;font-weight:800;font-size:.85rem}
+.boost[data-on="1"]{background:var(--accent);color:var(--accent-fg)}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.lang{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-weight:800;font-size:.85rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-width:0}
+.stat small{display:block;color:var(--muted);font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.stat b{font-family:var(--font-display);font-size:1.5rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.coin{display:inline-block;width:.8em;height:.8em;border-radius:50%;background:var(--sun);box-shadow:inset 0 0 0 .13em rgba(0,0,0,.18);margin-right:.3em;vertical-align:-.05em}
+
+.view[hidden]{display:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.pen{height:112px;display:grid;place-items:center;position:relative;background:
+  radial-gradient(circle at 20% 80%,rgba(44,138,75,.18) 0 22px,transparent 23px),
+  radial-gradient(circle at 85% 70%,rgba(44,138,75,.14) 0 30px,transparent 31px),
+  linear-gradient(var(--sky) 0 38%,var(--surface-2) 38%)}
+.animal{font-size:58px;line-height:1;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 6px 4px rgba(0,0,0,.18))}
+.locked .animal{filter:grayscale(1) brightness(.55);animation:none;opacity:.7}
+.mood{position:absolute;top:8px;right:10px;font-size:.72rem;font-weight:800;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.mood.low{color:var(--bad)} .mood.mid{color:var(--warn)} .mood.ok{color:var(--good)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.name-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.name{font-family:var(--font-display);font-size:1.15rem;font-weight:600}
+.lvl{color:var(--muted);font-weight:800;font-size:.8rem;white-space:nowrap}
+.rate{color:var(--muted);font-size:.82rem;font-variant-numeric:tabular-nums}
+.bar{height:9px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--good);transition:width .25s linear,background .25s}
+.bar i.mid{background:var(--warn)} .bar i.low{background:var(--bad)}
+.collect{width:100%;background:var(--sun);color:var(--sun-fg);border-radius:12px;padding:10px;font-weight:800;font-variant-numeric:tabular-nums}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 8px;font-weight:800;font-size:.85rem;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0}
+.btn small{font-weight:700;color:var(--muted);font-size:.75rem;font-variant-numeric:tabular-nums}
+.btn.go{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.btn.go small{color:inherit;opacity:.9}
+
+.list{display:grid;gap:12px;padding-top:14px}
+.up{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px}
+.up .ic{font-size:30px;text-align:center}
+.up h3{margin:0;font-family:var(--font-display);font-size:1.02rem}
+.up p{margin:2px 0 0;color:var(--muted);font-size:.82rem}
+.up .btn{min-width:92px}
+.note{color:var(--muted);font-size:.8rem;padding:14px 2px 0}
+
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);
+  padding:8px max(16px,env(safe-area-inset-left,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px))}
+nav .in{max-width:760px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+nav button{background:transparent;border-radius:12px;padding:10px;font-weight:800;color:var(--muted)}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-fg)}
+
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:800;font-size:.88rem;transition:.25s;max-width:calc(100% - 32px);text-align:center;z-index:40}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.by{display:block;color:var(--muted);font-size:.74rem;font-weight:800;letter-spacing:.04em;margin-top:1px}
+.credit{color:var(--muted);font-size:.76rem;text-align:center;padding:18px 0 0}
+.ov{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(10,24,16,.74);backdrop-filter:blur(3px);
+  padding:16px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+.ov-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:26px 22px 20px;max-width:380px;width:100%;text-align:center;display:grid;gap:12px}
+.ov-ic{font-size:64px;line-height:1}
+.ov-card h2{font-family:var(--font-display);font-size:1.7rem;margin:0}
+.ov-card p{margin:0;color:var(--muted)}
+.ov-btns{display:grid;gap:10px;margin-top:6px}
+.btn.big{padding:14px 10px;font-size:1rem;flex-direction:row;justify-content:center}
+.ov-card .credit{padding:8px 0 0}
+@media (prefers-reduced-motion:reduce){.animal{animation:none}.bar i,#toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="title-row">
+      <div><h1>Zoo du Faso</h1><span class="by">par Abdoulaye Kaboré</span></div>
+      <div class="tools"><button class="lang" id="pause" type="button" data-i18n="pause">Pause</button><button class="lang" id="lang" type="button" aria-label="Langue">Mooré</button>
+      <button class="boost" id="boost" type="button">Boost x2 · vidéo</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><small data-i18n="coins">Pièces</small><b><span class="coin"></span><span id="coins">0</span></b></div>
+      <div class="stat"><small data-i18n="rate">Revenus / seconde</small><b><span id="rate">0</span></b></div>
+    </div>
+  </header>
+
+  <section class="view" id="v-zoo" aria-label="Enclos">
+    <div class="grid" id="pens"></div>
+    <p class="note" data-i18n="noteZoo">Nourrissez vos animaux : un animal affamé rapporte jusqu'à 4 fois moins. Touchez « Collecter » pour récupérer les pièces de chaque enclos.</p>
+  </section>
+
+  <section class="view" id="v-shop" aria-label="Améliorations" hidden>
+    <div class="list" id="ups"></div>
+    <p class="note" data-i18n="noteShop">Les améliorations du zoo s'appliquent à tous les enclos, y compris ceux que vous débloquerez plus tard.</p>
+  </section>
+</div>
+
+<footer class="credit">© 2026 Abdoulaye Kaboré · Koudougou, Burkina Faso · Tous droits réservés</footer>
+
+<div class="ov" id="ov" role="dialog" aria-modal="true" aria-labelledby="ov-t" hidden>
+  <div class="ov-card">
+    <div class="ov-ic" aria-hidden="true">&#x1F992;</div>
+    <h2 id="ov-t"></h2>
+    <p id="ov-p"></p>
+    <div class="ov-btns">
+      <button type="button" class="btn go big" id="ov-main"></button>
+      <button type="button" class="btn big" id="ov-quit"></button>
+    </div>
+    <p class="credit">© 2026 Abdoulaye Kaboré</p>
+  </div>
+</div>
+
+<nav aria-label="Navigation"><div class="in" role="tablist">
+  <button type="button" role="tab" id="t-zoo" aria-selected="true" data-i18n="tabZoo">Mon zoo</button>
+  <button type="button" role="tab" id="t-shop" aria-selected="false" data-i18n="tabShop">Améliorations</button>
+</div></nav>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  var SPECIES=[
+    {id:'zebre',name:'Zèbre',e:'\u{1F993}',cost:0,inc:1,feed:12},
+    {id:'singe',name:'Singe',e:'\u{1F412}',cost:150,inc:4,feed:45},
+    {id:'girafe',name:'Girafe',e:'\u{1F992}',cost:1200,inc:14,feed:150},
+    {id:'lion',name:'Lion',e:'\u{1F981}',cost:7500,inc:48,feed:480},
+    {id:'croco',name:'Crocodile',e:'\u{1F40A}',cost:40000,inc:160,feed:1500},
+    {id:'elephant',name:'Éléphant',e:'\u{1F418}',cost:210000,inc:560,feed:5200},
+    {id:'rhino',name:'Rhinocéros',e:'\u{1F98F}',cost:1100000,inc:1900,feed:17000},
+    {id:'hippo',name:'Hippopotame',e:'\u{1F99B}',cost:5800000,inc:6500,feed:58000},
+    {id:'panda',name:'Panda',e:'\u{1F43C}',cost:30000000,inc:22000,feed:190000}
+  ];
+  var UPS=[
+    {id:'billet',ic:'\u{1F39F}️',name:'Prix du billet',desc:'+25 % de revenus par niveau',base:250,g:2.2},
+    {id:'boutique',ic:'\u{1F6CD}️',name:'Boutique souvenirs',desc:'+15 % de revenus par niveau',base:700,g:2.4},
+    {id:'resto',ic:'\u{1F354}',name:'Restaurant',desc:'+20 % de revenus par niveau',base:2000,g:2.6}
+  ];
+  var DECAY=100/90, SAVE_KEY='zoo-du-faso-v1';
+  var S=load();
+  var boostUntil=0, adBusy=false;
+
+  /* Langues. Pour le mooré, chaque texte laissé vide s'affiche en français.
+     Remplissez ou corrigez les textes de T.mo ci-dessous. */
+  var lang='fr';
+  try{lang=localStorage.getItem('zoo-lang')==='mo'?'mo':'fr'}catch(e){}
+  var T={
+    fr:{
+      coins:'Pièces',rate:'Revenus / seconde',tabZoo:'Mon zoo',tabShop:'Améliorations',
+      noteZoo:'Nourrissez vos animaux : un animal affamé rapporte jusqu’à 4 fois moins. Touchez « Collecter » pour récupérer les pièces de chaque enclos.',
+      noteShop:'Les améliorations du zoo s’appliquent à tous les enclos, y compris ceux que vous débloquerez plus tard.',
+      feed:'Nourrir',upgrade:'Améliorer',buy:'Acheter',level:'Niveau',perSec:'pièces/s',
+      collect:'Collecter',nothing:'Rien à collecter',full:'Rassasié',
+      moodOk:'Content',moodMid:'A faim',moodLow:'Affamé',locked:'Verrouillé',unlock:'Débloquer',
+      unlockRate:'Rapporte {n} pièce/s au niveau 1',joined:'a rejoint le zoo !',
+      away:'Pendant votre absence : +{n} pièces',boost:'Boost x2 · vidéo',adBusy:'Vidéo en cours…',boostOn:'Revenus x2 pendant 1 minute',
+      up_billet:'Prix du billet',up_billet_d:'+25 % de revenus par niveau',
+      up_boutique:'Boutique souvenirs',up_boutique_d:'+15 % de revenus par niveau',
+      up_resto:'Restaurant',up_resto_d:'+20 % de revenus par niveau',
+      pause:'Pause',resume:'Reprendre',quitGame:'Fermer le jeu',play:'Jouer',reopen:'Rouvrir le jeu',
+      pausedT:'Jeu en pause',pausedP:'Les revenus sont suspendus. Vos animaux vous attendent.',
+      closedT:'Jeu fermé',closedP:'Votre progression est sauvegardée. À bientôt !',
+      startP:'Un jeu créé par Abdoulaye Kaboré, de Koudougou. Construisez votre zoo, nourrissez vos animaux et faites grandir vos revenus.'
+    },
+    mo:{
+      coins:'Sika',tabZoo:'Mam zoo',tabShop:'Maan-sõma',upgrade:'Maan-sõma',moodOk:'Sũur sõma'
+    }
+  };
+  function t(k){var d=T[lang];return (d&&d[k])||T.fr[k]}
+  function applyStatic(){
+    var els=document.querySelectorAll('[data-i18n]');
+    for(var i=0;i<els.length;i++){els[i].textContent=t(els[i].getAttribute('data-i18n'))}
+    document.getElementById('lang').textContent=lang==='fr'?'Mooré':'Français';
+    document.documentElement.lang=lang==='fr'?'fr':'mos';
+  }
+
+  function fresh(){
+    var p=SPECIES.map(function(s,i){return {owned:i===0,level:1,hunger:100,pending:0}});
+    return {coins:60,pens:p,up:{billet:0,boutique:0,resto:0},t:Date.now()};
+  }
+  function load(){
+    try{
+      var raw=localStorage.getItem(SAVE_KEY);
+      if(raw){var d=JSON.parse(raw); if(d&&d.pens&&d.pens.length===SPECIES.length) return d;}
+    }catch(e){}
+    return fresh();
+  }
+  function save(){S.t=Date.now();try{localStorage.setItem(SAVE_KEY,JSON.stringify(S))}catch(e){}}
+
+  function fmt(n){
+    n=Math.floor(n);
+    if(n<1000) return String(n);
+    var u=['k','M','Md','Bn'],i=-1,v=n;
+    while(v>=1000&&i<u.length-1){v/=1000;i++}
+    return (v<10?v.toFixed(2):v<100?v.toFixed(1):Math.floor(v))+u[i];
+  }
+  function fmtRate(n){return n<10?n.toFixed(1):fmt(n)}
+  function mult(){
+    var m=(1+.25*S.up.billet)*(1+.15*S.up.boutique)*(1+.2*S.up.resto);
+    return Date.now()<boostUntil?m*2:m;
+  }
+  function moodOf(h){return h>60?'ok':h>25?'mid':'low'}
+  function penRate(i){
+    var p=S.pens[i]; if(!p.owned) return 0;
+    return SPECIES[i].inc*p.level*(.25+.75*p.hunger/100)*mult();
+  }
+  function totalRate(){var t=0;for(var i=0;i<SPECIES.length;i++)t+=penRate(i);return t}
+  function upCost(i){return Math.floor(SPECIES[i].cost>0?SPECIES[i].cost*.6*Math.pow(1.55,S.pens[i].level):40*Math.pow(1.55,S.pens[i].level))}
+  function globalCost(u){return Math.floor(u.base*Math.pow(u.g,S.up[u.id]))}
+
+  var toastT;
+  function toast(msg){
+    var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2200);
+  }
+
+  /* Absence : gains hors ligne à 50 %, 2 h maximum */
+  (function offline(){
+    var secs=Math.min(Math.max((Date.now()-(S.t||Date.now()))/1000,0),7200);
+    if(secs<30) return;
+    for(var i=0;i<S.pens.length;i++){S.pens[i].hunger=Math.max(20,S.pens[i].hunger-DECAY*secs*.5)}
+    var gain=totalRate()*secs*.5;
+    if(gain>=1){S.coins+=gain;setTimeout(function(){toast(t('away').replace('{n}',fmt(gain)))},500)}
+  })();
+
+  var pensEl=document.getElementById('pens'),upsEl=document.getElementById('ups'),refs=[],upRefs=[];
+
+  function buildPens(){
+    pensEl.innerHTML='';refs=[];
+    SPECIES.forEach(function(sp,i){
+      var card=document.createElement('article');card.className='card';
+      card.innerHTML=
+        '<div class="pen"><div class="animal">'+sp.e+'</div><span class="mood"></span></div>'+
+        '<div class="body">'+
+          '<div class="name-row"><span class="name">'+sp.name+'</span><span class="lvl"></span></div>'+
+          '<div class="rate"></div>'+
+          '<div class="bar" aria-hidden="true"><i></i></div>'+
+          '<button type="button" class="collect"></button>'+
+          '<div class="row"><button type="button" class="btn feed"><span data-i18n="feed">Nourrir</span><small></small></button>'+
+          '<button type="button" class="btn go up"><span data-i18n="upgrade">Améliorer</span><small></small></button></div>'+
+        '</div>';
+      pensEl.appendChild(card);
+      var r={card:card,mood:card.querySelector('.mood'),lvl:card.querySelector('.lvl'),rate:card.querySelector('.rate'),
+        bar:card.querySelector('.bar i'),collect:card.querySelector('.collect'),feed:card.querySelector('.feed'),up:card.querySelector('.up'),
+        feedS:card.querySelector('.feed small'),upS:card.querySelector('.up small'),row:card.querySelector('.row')};
+      r.collect.onclick=function(){
+        var p=S.pens[i];
+        if(!p.owned){
+          if(S.coins>=sp.cost){S.coins-=sp.cost;p.owned=true;p.hunger=100;toast(sp.name+' '+t('joined'));buildPens();paint();save()}
+          return;
+        }
+        if(p.pending>=1){S.coins+=p.pending;p.pending=0;paint()}
+      };
+      r.feed.onclick=function(){
+        var p=S.pens[i];
+        if(S.coins>=sp.feed&&p.hunger<99){S.coins-=sp.feed;p.hunger=100;paint();save()}
+      };
+      r.up.onclick=function(){
+        var p=S.pens[i],c=upCost(i);
+        if(S.coins>=c){S.coins-=c;p.level++;paint();save()}
+      };
+      refs.push(r);
+    });
+    applyStatic();
+  }
+
+  function buildUps(){
+    upsEl.innerHTML='';upRefs=[];
+    UPS.forEach(function(u){
+      var el=document.createElement('div');el.className='up';
+      el.innerHTML='<div class="ic">'+u.ic+'</div><div><h3>'+u.name+'</h3><p></p></div><button type="button" class="btn go"><span data-i18n="buy">Acheter</span><small></small></button>';
+      upsEl.appendChild(el);
+      var b=el.querySelector('button');
+      b.onclick=function(){var c=globalCost(u);if(S.coins>=c){S.coins-=c;S.up[u.id]++;paint();save()}};
+      upRefs.push({u:u,h:el.querySelector('h3'),p:el.querySelector('p'),b:b,s:el.querySelector('small')});
+    });
+  }
+
+  var coinsEl=document.getElementById('coins'),rateEl=document.getElementById('rate'),boostEl=document.getElementById('boost');
+  function paint(){
+    coinsEl.textContent=fmt(S.coins);
+    rateEl.textContent=fmtRate(totalRate());
+    SPECIES.forEach(function(sp,i){
+      var p=S.pens[i],r=refs[i];
+      if(!p.owned){
+        r.card.classList.add('locked');
+        r.mood.textContent=t('locked');r.mood.className='mood';
+        r.lvl.textContent='';r.rate.textContent=t('unlockRate').replace('{n}',fmt(sp.inc));
+        r.bar.style.width='0%';
+        r.collect.textContent=t('unlock')+' · '+fmt(sp.cost);r.collect.disabled=S.coins<sp.cost;
+        r.row.hidden=true;
+        return;
+      }
+      r.card.classList.remove('locked');r.row.hidden=false;
+      var m=moodOf(p.hunger);
+      r.mood.textContent=m==='ok'?t('moodOk'):m==='mid'?t('moodMid'):t('moodLow');r.mood.className='mood '+m;
+      r.lvl.textContent=t('level')+' '+p.level;
+      r.rate.textContent='+'+fmtRate(penRate(i))+' '+t('perSec');
+      r.bar.style.width=Math.max(0,p.hunger)+'%';r.bar.className=m==='ok'?'':m;
+      r.collect.textContent=p.pending>=1?t('collect')+' +'+fmt(p.pending):t('nothing');
+      r.collect.disabled=p.pending<1;
+      r.feedS.textContent=p.hunger>=99?t('full'):fmt(sp.feed);
+      r.feed.disabled=p.hunger>=99||S.coins<sp.feed;
+      r.upS.textContent=fmt(upCost(i));r.up.disabled=S.coins<upCost(i);
+    });
+    upRefs.forEach(function(x){
+      x.h.textContent=t('up_'+x.u.id);
+      x.p.textContent=t('up_'+x.u.id+'_d')+' · '+t('level')+' '+S.up[x.u.id];
+      var c=globalCost(x.u);x.s.textContent=fmt(c);x.b.disabled=S.coins<c;
+    });
+    var on=Date.now()<boostUntil;
+    boostEl.dataset.on=on?'1':'0';
+    boostEl.textContent=on?'Boost x2 · '+Math.ceil((boostUntil-Date.now())/1000)+' s':adBusy?t('adBusy'):t('boost');
+    boostEl.disabled=adBusy;
+  }
+
+  /* Emplacement de la pub récompensée : remplacez ce délai par l'appel AdMob dans l'application publiée. */
+  boostEl.onclick=function(){
+    if(adBusy||Date.now()<boostUntil) return;
+    adBusy=true;paint();
+    setTimeout(function(){adBusy=false;boostUntil=Date.now()+60000;toast(t('boostOn'));paint()},2500);
+  };
+
+  var last=Date.now(),saveAt=0;
+  setInterval(function(){
+    var now=Date.now(),dt=Math.min((now-last)/1000,1);last=now;
+    if(paused){if(boostUntil>now)boostUntil+=dt*1000;return}
+    for(var i=0;i<SPECIES.length;i++){
+      var p=S.pens[i];if(!p.owned) continue;
+      p.hunger=Math.max(0,p.hunger-DECAY*dt);
+      var cap=SPECIES[i].inc*p.level*mult()*120;
+      p.pending=Math.min(cap,p.pending+penRate(i)*dt);
+    }
+    paint();
+    if(now-saveAt>5000){saveAt=now;save()}
+  },250);
+
+  function show(tab){
+    var zoo=tab==='zoo';
+    document.getElementById('v-zoo').hidden=!zoo;document.getElementById('v-shop').hidden=zoo;
+    document.getElementById('t-zoo').setAttribute('aria-selected',zoo);
+    document.getElementById('t-shop').setAttribute('aria-selected',!zoo);
+    window.scrollTo(0,0);
+  }
+  document.getElementById('t-zoo').onclick=function(){show('zoo')};
+  document.getElementById('t-shop').onclick=function(){show('shop')};
+  document.addEventListener('visibilitychange',function(){if(document.hidden)save()});
+
+  /* Écran d'accueil, pause et fermeture */
+  var paused=true,ovMode='start';
+  var ov=document.getElementById('ov'),ovMain=document.getElementById('ov-main'),ovQuit=document.getElementById('ov-quit');
+  function showOv(mode){
+    ovMode=mode;paused=true;
+    var T1={start:['Zoo du Faso','startP','play'],pause:[null,'pausedP','resume'],closed:[null,'closedP','reopen']};
+    var c=T1[mode];
+    document.getElementById('ov-t').textContent=c[0]||t(mode==='pause'?'pausedT':'closedT');
+    document.getElementById('ov-p').textContent=t(c[1]);
+    ovMain.textContent=t(c[2]);
+    ovQuit.textContent=t('quitGame');ovQuit.hidden=mode!=='pause';
+    ov.hidden=false;ovMain.focus();save();
+  }
+  function hideOv(){ov.hidden=true;paused=false;last=Date.now()}
+  ovMain.onclick=hideOv;
+  ovQuit.onclick=function(){showOv('closed')};
+  document.getElementById('pause').onclick=function(){showOv('pause')};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(!ov.hidden&&ovMode==='pause')hideOv();else if(ov.hidden)showOv('pause')}});
+
+  document.getElementById('lang').onclick=function(){
+    lang=lang==='fr'?'mo':'fr';
+    try{localStorage.setItem('zoo-lang',lang)}catch(e){}
+    applyStatic();paint();
+  };
+
+  buildPens();buildUps();applyStatic();paint();showOv('start');
+})();
+</script>
+
+</body></html>
